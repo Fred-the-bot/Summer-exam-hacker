@@ -10,7 +10,7 @@ String wifiSSID = "Det_ved_jeg";
 String wifiPass = "Vfp62rxu";
 
 String IPRange = "192.168.1.";
-int tempIP = 0
+int tempIP = 120;
 String port = "21";
 
 int countTrueCommand;
@@ -36,7 +36,6 @@ void loop() {
   {
     case 1:
       //Reset
-      tempIP=0;
       sendBasicCommand("AT+RST",10, 2);
     break;
 
@@ -52,13 +51,9 @@ void loop() {
     break;
 
     case 4:
+    IPScan();
       //Create Connection Connection
-      IPRange = IPRange + tempIP;
-      tempIP++;
-      Sendscanner("AT+CIPSTART=\"TCP\",\"" + IPRange + "\"," + port + "",5, 5);
-      if (tempIP == 255){
-        Serial.println("REACHED THE END");
-      }
+
       
     break;
 
@@ -76,7 +71,12 @@ void loop() {
 
   delay(500);
 }
-
+void IPScan(){
+  String IPRange = "192.168.1.";
+        IPRange = IPRange + tempIP;
+      tempIP++;
+      Sendscanner("AT+CIPSTART=\"TCP\",\"" + IPRange + "\"," + port + "",5, 5);
+}
 void sendBasicCommand(String command, int maxTime, int nextStep) {
    Serial.print("command ");
    Serial.print(command);
@@ -124,7 +124,7 @@ void sendBasicCommand(String command, int maxTime, int nextStep) {
 
 
  
-void SendScanner(String command, int maxTime, int nextStep) {
+void Sendscanner(String command, int maxTime, int nextStep) {
    Serial.print("command ");
    Serial.print(command);
 
@@ -146,8 +146,10 @@ void SendScanner(String command, int maxTime, int nextStep) {
   if(found == true)
   {
     Serial.print(" (good)");
-    Serial.println("Found FTP SERVER on: "+IPRange);
-    foundFTPServers[targets]= IPRange;
+    Serial.println("Found FTP SERVER on: "+tempIP);
+   // IPRange=IPRange+tempIP;
+    //strcat(foundFTPServers,IPRange.c_str());
+   // foundFTPServers[targets]= IPRange;
     countTrueCommand++;
     countTimeCommand = 0;
 
@@ -158,9 +160,9 @@ void SendScanner(String command, int maxTime, int nextStep) {
  
   if(found == false)
   {
-    Serial.print(" found no FTP server here");
+    Serial.println(" found no FTP server here");
     countTrueCommand = 0;
-    wifiStep = 4;
+    //wifiStep = 4;
     sendBasicCommand("AT+CIPCLOSE",5, 4);
   }
  
