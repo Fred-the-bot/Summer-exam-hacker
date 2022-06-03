@@ -2,7 +2,8 @@
 
 #define RX 2
 #define TX 3
-
+char *foundFTPServers[] ={};
+int targets= 0;
 SoftwareSerial esp8266(RX,TX);
 
 String wifiSSID = "Det_ved_jeg";
@@ -146,6 +147,7 @@ void SendScanner(String command, int maxTime, int nextStep) {
   {
     Serial.print(" (good)");
     Serial.println("Found FTP SERVER on: "+IPRange);
+    foundFTPServers[targets]= IPRange;
     countTrueCommand++;
     countTimeCommand = 0;
 
