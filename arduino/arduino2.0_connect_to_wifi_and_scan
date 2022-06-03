@@ -9,6 +9,7 @@ String wifiSSID = "Det_ved_jeg";
 String wifiPass = "Vfp62rxu";
 
 String IPRange = "192.168.1.";
+int tempIP = 0
 String port = "21";
 
 int countTrueCommand;
@@ -34,30 +35,37 @@ void loop() {
   {
     case 1:
       //Reset
+      tempIP=0;
       sendBasicCommand("AT+RST",10, 2);
     break;
 
     case 2:
       //Set Mode
-      sendBasicCommand("AT+CWMODE_CUR=1",5, 5);
+      sendBasicCommand("AT+CWMODE_CUR=1",5, 3);
      
     break;
 
-    case 5:
+    case 3:
       //Connect to router
-      sendBasicCommand("AT+CWJAP_CUR=\""+ wifiSSID + "\",\"" + wifiPass + "\"",15, 6);
+      sendBasicCommand("AT+CWJAP_CUR=\""+ wifiSSID + "\",\"" + wifiPass + "\"",15, 4);
     break;
 
-    case 6:
+    case 4:
       //Create Connection Connection
-      sendBasicCommand("AT+CIPSTART=\"TCP\",\"" + IPRange + "\"," + port + "",5, 7);
+      IPRange = IPRange + tempIP;
+      tempIP++;
+      Sendscanner("AT+CIPSTART=\"TCP\",\"" + IPRange + "\"," + port + "",5, 5);
+      if (tempIP == 255){
+        Serial.println("REACHED THE END");
+      }
+      
     break;
 
-    case 9:
+    case 5:
       //Close Connection
-      //sendBasicCommand("AT+CIPCLOSE",5, 6);
-      wifiStep = 6;
-      delay(5000);     
+      sendBasicCommand("AT+CIPCLOSE",5, 4);
+      wifiStep = 4;
+      delay(1000);     
     break;
    
     default:
@@ -105,6 +113,53 @@ void sendBasicCommand(String command, int maxTime, int nextStep) {
 
     //if failed then reset the wifi status to 0 so start the process again from the beginning
     wifiStep = 1;
+  }
+ 
+  Serial.println("");
+
+ }
+
+
+
+
+ 
+void SendScanner(String command, int maxTime, int nextStep) {
+   Serial.print("command ");
+   Serial.print(command);
+
+    boolean found = false;
+ 
+  while(countTimeCommand < (maxTime*1))
+  {
+    char data = esp8266.read();
+    esp8266.println(command);
+    if(esp8266.find("OK"))
+    {
+      found = true;
+      break;
+    }
+ 
+    countTimeCommand++;
+  }
+ 
+  if(found == true)
+  {
+    Serial.print(" (good)");
+    Serial.println("Found FTP SERVER on: "+IPRange);
+    countTrueCommand++;
+    countTimeCommand = 0;
+
+    if(nextStep != -1){
+      wifiStep = nextStep;
+    }
+  }
+ 
+  if(found == false)
+  {
+    Serial.print(" found no FTP server here");
+    countTrueCommand = 0;
+    wifiStep = 4;
+    sendBasicCommand("AT+CIPCLOSE",5, 4);
   }
  
   Serial.println("");
