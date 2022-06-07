@@ -1,0 +1,210 @@
+/*
+  The circuit:
+    SD card attached to SPI bus as follows:
+ ** MOSI - pin 11
+ ** MISO - pin 12
+ ** sck  - pin 13
+ ** CS   - pin 4
+ ** RX   - pin 2 (BLUE)
+ ** TX   - pin 3 (GREEN)
+*/
+
+
+#include <SoftwareSerial.h>
+#include <SPI.h>
+#include <SD.h>
+#define RX 2
+#define TX 3
+
+Sd2Card card;
+SdVolume volume;
+SdFile root;
+
+const int chipSelect = 4;
+
+
+char *foundFTPServers[] = {};
+int targets = 0;
+SoftwareSerial esp8266(RX, TX);
+
+String wifiSSID = "Det_ved_jeg";
+String wifiPass = "Vfp62rxu";
+
+String IPRange = "192.168.1.";
+int tempIP = 120;
+String port = "21";
+
+int countTrueCommand;
+int countTimeCommand;
+
+int wifiStep = 1;
+
+void setup() {
+  // put your setup code here, to run once:
+
+  Serial.begin(115200);
+  Serial.println("Starting...");
+  SD.begin(4); 
+  esp8266.begin(115200);
+
+  delay(2000);
+
+}
+
+void loop() {
+
+  switch (wifiStep)
+  {
+    case 1:
+      //Reset
+      sendBasicCommand("AT+RST", 10, 2);
+      break;
+
+    case 2:
+      //Set Mode
+      sendBasicCommand("AT+CWMODE_CUR=1", 5, 3);
+
+      break;
+
+    case 3:
+      //Connect to router
+      sendBasicCommand("AT+CWJAP_CUR=\"" + wifiSSID + "\",\"" + wifiPass + "\"", 15, 4);
+      break;
+
+    case 4:
+      IPScan();
+      //Create Connection Connection
+
+
+      break;
+
+    case 5:
+      //Close Connection
+      sendBasicCommand("AT+CIPCLOSE", 5, 4);
+      wifiStep = 4;
+      delay(1000);
+      break;
+
+    default:
+      wifiStep = 1;
+      break;
+  }
+
+  delay(500);
+}
+void IPScan() {
+  String IPRange = "192.168.1.";
+  IPRange = IPRange + tempIP;
+  tempIP++;
+  Sendscanner("AT+CIPSTART=\"TCP\",\"" + IPRange + "\"," + port + "", 5, 5);
+}
+void sendBasicCommand(String command, int maxTime, int nextStep) {
+  Serial.print("command ");
+  Serial.print(command);
+
+  boolean found = false;
+
+  while (countTimeCommand < (maxTime * 1))
+  {
+    char data = esp8266.read();
+    esp8266.println(command);
+    if (esp8266.find("OK"))
+    {
+      found = true;
+      break;
+    }
+
+    countTimeCommand++;
+  }
+
+  if (found == true)
+  {
+    Serial.print(" (good)");
+    countTrueCommand++;
+    countTimeCommand = 0;
+
+    if (nextStep != -1) {
+      wifiStep = nextStep;
+    }
+  }
+
+  if (found == false)
+  {
+    Serial.print(" (fail)!!!!!!!!!");
+    countTrueCommand = 0;
+
+    //if failed then reset the wifi status to 0 so start the process again from the beginning
+    wifiStep = 1;
+  }
+
+  Serial.println("");
+
+}
+
+
+
+
+
+void Sendscanner(String command, int maxTime, int nextStep) {
+  Serial.print("command ");
+  Serial.print(command);
+
+  boolean found = false;
+
+  while (countTimeCommand < (maxTime * 1))
+  {
+    char data = esp8266.read();
+    esp8266.println(command);
+    if (esp8266.find("OK"))
+    {
+      found = true;
+      break;
+    }
+
+    countTimeCommand++;
+  }
+
+  if (found == true)
+  {
+    int fix= tempIP - 1 ;
+    String foundserver = IPRange + fix;
+    Serial.print(" (good)");
+    Serial.println("Found FTP SERVER on: " + foundserver);
+    ListIP();
+    countTrueCommand++;
+    countTimeCommand = 0;
+
+    if (nextStep != -1) {
+      wifiStep = nextStep;
+    }
+  }
+
+  if (found == false)
+  {
+    Serial.println(" found no FTP server here");
+    countTrueCommand = 0;
+    //wifiStep = 4;
+    sendBasicCommand("AT+CIPCLOSE", 5, 4);
+  }
+
+  Serial.println("");
+
+}
+void ListIP() {
+  int fix= tempIP - 1;
+  String foundserver = IPRange + fix;
+  File IPList = SD.open("ip.txt", FILE_WRITE);
+  if (IPList) {
+
+
+    IPList.print("FTP Server: ");
+    IPList.print(foundserver);
+    IPList.print(":");
+    IPList.println(port);
+    
+    IPList.close();
+  }
+  else {
+    Serial.println("error opening ServerList.txt");
+  }
+}
