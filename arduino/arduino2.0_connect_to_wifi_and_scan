@@ -6,8 +6,8 @@ char *foundFTPServers[] ={};
 int targets= 0;
 SoftwareSerial esp8266(RX,TX);
 
-String wifiSSID = "Det_ved_jeg";
-String wifiPass = "Vfp62rxu";
+String wifiSSID = "SSID";
+String wifiPass = "Pass";
 
 String IPRange = "192.168.1.";
 int tempIP = 120;
