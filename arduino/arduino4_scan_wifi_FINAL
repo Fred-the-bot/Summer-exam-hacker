@@ -22,8 +22,8 @@ const int chipSelect = 4;
 int targets = 0;
 SoftwareSerial esp8266(RX, TX);
 
-String wifiSSID = "Det_ved_jeg";
-String wifiPass = "Vfp62rxu";
+String wifiSSID = "SSID";
+String wifiPass = "PASS";
 
 String IPRange = "192.168.";
 int bigIP = 1;
